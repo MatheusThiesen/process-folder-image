@@ -17,7 +17,15 @@ export class ProcessImage {
     const fileBackupPath = path.resolve(this.pathBackup, filename);
 
     const readFile = await this.actionImage.read(filepath);
-    await this.actionImage.compress(readFile, fileDestinyPath);
+
+    const extensionSlit = filename.split(".");
+
+    const extension =
+      extensionSlit[extensionSlit.length - 1].toLocaleUpperCase() === "PNG"
+        ? "png"
+        : "jpeg";
+
+    await this.actionImage.compress(readFile, fileDestinyPath, extension);
     await this.actionImage.copy(filepath, fileBackupPath);
     await this.actionImage.delete(filepath);
   }

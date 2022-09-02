@@ -39,25 +39,45 @@ export class ActionImage implements IActionImage {
     });
   }
 
-  async compress(file: Buffer, filepath: string): Promise<sharp.OutputInfo> {
+  async compress(
+    file: Buffer,
+    filepath: string,
+    extension: "png" | "jpeg"
+  ): Promise<sharp.OutputInfo> {
     const quality =
-      Number(file.byteLength / 1024) > 8000
+      Number(file.byteLength / 1024) > 9000
+        ? 25
+        : Number(file.byteLength / 1024) > 8000
         ? 30
         : Number(file.byteLength / 1024) > 500
         ? 50
         : 80;
 
-    return await new Promise((resolve, reject) => {
-      sharp(file)
-        .png({ quality: quality, progressive: true })
-        .toFile(filepath, (err, info) => {
-          if (err) {
-            reject(err);
-          }
+    if (extension === "png") {
+      return await new Promise((resolve, reject) => {
+        sharp(file)
+          .png({ quality: quality, progressive: true })
+          .toFile(filepath, (err, info) => {
+            if (err) {
+              reject(err);
+            }
 
-          resolve(info);
-        });
-    });
+            resolve(info);
+          });
+      });
+    } else {
+      return await new Promise((resolve, reject) => {
+        sharp(file)
+          .jpeg({ quality: quality, progressive: true })
+          .toFile(filepath, (err, info) => {
+            if (err) {
+              reject(err);
+            }
+
+            resolve(info);
+          });
+      });
+    }
   }
 
   async listAll(pathfiles: string): Promise<string[]> {
