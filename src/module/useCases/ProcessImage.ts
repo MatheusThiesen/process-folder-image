@@ -1,11 +1,15 @@
 import path from "path";
 import { ActionImage } from "../repositories/ActionImage";
+import { IUploadImage } from "../repositories/IUploadImage";
 
 export class ProcessImage {
   private pathImages;
   private pathDestiny;
   private pathBackup;
-  constructor(private actionImage: ActionImage) {
+  constructor(
+    private actionImage: ActionImage,
+    private uploadImage: IUploadImage
+  ) {
     this.pathImages = process.env.PATH_IMAGES || "";
     this.pathDestiny = process.env.PATH_DESTINY || "";
     this.pathBackup = process.env.PATH_BACKUP || "";
@@ -25,7 +29,13 @@ export class ProcessImage {
         ? "png"
         : "jpeg";
 
-    await this.actionImage.compress(readFile, fileDestinyPath, extension);
+    await this.actionImage.compressToFile(readFile, fileDestinyPath, extension);
+
+    const fileCompress = await this.actionImage.compressToBuffer(
+      readFile,
+      extension
+    );
+    await this.uploadImage.upload(filename, fileCompress);
     await this.actionImage.copy(filepath, fileBackupPath);
     await this.actionImage.delete(filepath);
   }
