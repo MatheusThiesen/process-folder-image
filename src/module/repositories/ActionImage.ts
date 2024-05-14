@@ -58,6 +58,7 @@ export class ActionImage implements IActionImage {
     if (extension === "png") {
       return await new Promise((resolve, reject) => {
         sharp(file)
+        .flatten({ background: "#ffffff" })
           .png({ quality: quality, progressive: true })
           .toFile(filepath, (err, info) => {
             if (err) {
@@ -70,6 +71,7 @@ export class ActionImage implements IActionImage {
     } else {
       return await new Promise((resolve, reject) => {
         sharp(file)
+        .flatten({ background: "#ffffff" })
           .jpeg({ quality: quality, progressive: true })
           .toFile(filepath, (err, info) => {
             if (err) {
@@ -84,16 +86,35 @@ export class ActionImage implements IActionImage {
 
   async compressToBuffer(
     file: Buffer,
-    extension: "png" | "jpeg"
+    extension: "png" | "jpeg",
+    isMaxCompress?: boolean
   ): Promise<Buffer> {
     const quality = this.quality(file.byteLength);
 
+    if (isMaxCompress) {
+      const compress = await sharp(file)
+        .flatten({ background: "#ffffff" })
+        .resize({
+          width: 280,
+        })
+        .webp({
+          quality: 1,
+          nearLossless: true,
+          alphaQuality: 1,
+        })
+        .toBuffer();
+  
+      return compress;
+    }
+
     if (extension === "png") {
       return sharp(file)
+      .flatten({ background: "#ffffff" })
         .png({ quality: quality, progressive: true })
         .toBuffer();
     } else {
       return sharp(file)
+      .flatten({ background: "#ffffff" })
         .jpeg({ quality: quality, progressive: true })
         .toBuffer();
     }

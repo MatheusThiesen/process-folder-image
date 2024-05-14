@@ -19,24 +19,31 @@ export class UploadImage implements IUploadImage {
     AWS.config.update({
       accessKeyId: this.accessKeyId,
       secretAccessKey: this.secretAccessKey,
-      region: "nyc3",
+      region: "sfo3",
     });
     this.s3 = new AWS.S3({
       endpoint: this.endPoint,
       params: { Bucket: this.bucketName },
     });
   }
-  upload(filename: string, file: Buffer): Promise<string> {
+  upload(filename: string, file: Buffer, fileSmall: Buffer): Promise<string> {
     var namefile = "";
     const nameSplit = filename.split(".");
 
     for (let index = 0; index < nameSplit.length; index++) {
       const element = nameSplit[index];
-
+  
       if (index !== nameSplit.length - 1) {
-        namefile += element;
+        if(index === 0 ){
+          namefile += element;
+        }else {
+  
+          namefile += '.'+element;
+        }
       }
     }
+
+
     const putObjectPromise = this.s3
       .putObject({
         Bucket: this.bucketName,
@@ -46,6 +53,27 @@ export class UploadImage implements IUploadImage {
         ACL: "public-read",
       })
       .promise();
+
+      const promise = Promise.all([
+        this.s3
+          .putObject({
+            Bucket: this.bucketName,
+            Key: `Produtos/${namefile}`,
+            Body: file,
+            ContentType: "image",
+            ACL: "public-read",
+          })
+          .promise(),
+        this.s3
+          .putObject({
+            Bucket: this.bucketName,
+            Key: `Produtos/${namefile}_smaller`,
+            Body: fileSmall,
+            ContentType: "image",
+            ACL: "public-read",
+          })
+          .promise(),
+      ]);
 
     return new Promise<string>((resolve, reject) => {
       putObjectPromise

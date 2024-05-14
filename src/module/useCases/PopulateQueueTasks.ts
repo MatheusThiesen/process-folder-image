@@ -15,7 +15,7 @@ export class PopulateQueueTasks {
   async execute() {
     const files = await this.actionImage.listAll(this.pathImages);
 
-    for (const filename of files) {
+    for (const filename of files.filter(f=> !['desktop.ini' , 'Thumbs.db'].includes(f))) {
       try {
         await this.actionImage.read(path.resolve(this.pathImages, filename));
 
@@ -23,7 +23,12 @@ export class PopulateQueueTasks {
           filename,
         });
         console.log(`[PROCESSADO] ${filename}`);
-      } catch (error) {}
+      } catch (error) {
+        console.log(filename);
+        
+        console.log(error);
+        
+      }
     }
   }
 }

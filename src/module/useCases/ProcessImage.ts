@@ -35,7 +35,12 @@ export class ProcessImage {
       readFile,
       extension
     );
-    await this.uploadImage.upload(filename, fileCompress);
+    const fileCompressMax = await this.actionImage.compressToBuffer(
+      readFile,
+      extension
+    );
+
+    await this.uploadImage.upload(filename, fileCompress,fileCompressMax);
     await this.actionImage.copy(filepath, fileBackupPath);
     await this.actionImage.delete(filepath);
   }
